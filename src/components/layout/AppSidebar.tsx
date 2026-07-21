@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   LayoutDashboard,
@@ -15,8 +16,10 @@ import {
   HelpCircle,
   GraduationCap,
   UserPlus,
+  UserCog,
   BarChart3,
   Shield,
+  FolderOpen,
   ChevronLeft,
   LogOut,
   Moon,
@@ -48,7 +51,9 @@ const teacherLinks = [
 ];
 
 const adminLinks = [
-  { to: '/admin', icon: Shield, label: 'Painel Admin' },
+  { to: '/admin', icon: Shield, label: 'Dashboard' },
+  { to: '/admin/content', icon: FolderOpen, label: 'Conteúdo das Turmas' },
+  { to: '/admin/users', icon: UserCog, label: 'Usuários' },
 ];
 
 const sharedLinks = [
@@ -67,11 +72,28 @@ export function AppSidebar() {
   }, [collapsed]);
   const [dark, setDark] = useState(false);
   const [, forceUpdate] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains('dark');
     setDark(isDark);
   }, []);
+
+  const loadPendingCount = useCallback(() => {
+    if (role !== 'admin') return;
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('approval_status', 'pending')
+      .then(({ count }) => setPendingCount(count ?? 0));
+  }, [role]);
+
+  useEffect(() => { loadPendingCount(); }, [loadPendingCount]);
+
+  useEffect(() => {
+    window.addEventListener('wisy:usersUpdated', loadPendingCount);
+    return () => window.removeEventListener('wisy:usersUpdated', loadPendingCount);
+  }, [loadPendingCount]);
 
   useEffect(() => {
     const handler = () => forceUpdate(n => n + 1);
@@ -85,7 +107,7 @@ export function AppSidebar() {
   };
 
   const links = role === 'admin'
-    ? [...adminLinks, ...teacherLinks, ...sharedLinks]
+    ? [...adminLinks, ...teacherLinks.filter(l => l.to !== '/teacher/students/register' && l.to !== '/teacher'), ...sharedLinks]
     : role === 'teacher'
       ? [...teacherLinks, ...sharedLinks]
       : [...studentLinks, { to: '/notifications', icon: Bell, label: 'Notificações' }, ...sharedLinks];
@@ -153,14 +175,22 @@ export function AppSidebar() {
               key={link.to}
               to={link.to}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 isActive
                   ? "gradient-primary text-white shadow-glow"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}
             >
               <link.icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span>{link.label}</span>}
+              {!collapsed && <span className="flex-1">{link.label}</span>}
+              {link.to === '/admin/users' && pendingCount > 0 && (
+                <span className={cn(
+                  "flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-semibold text-white",
+                  collapsed && "absolute right-1 top-1"
+                )}>
+                  {pendingCount}
+                </span>
+              )}
             </Link>
           );
         })}

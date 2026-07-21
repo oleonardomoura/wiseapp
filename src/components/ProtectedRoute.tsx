@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '@/contexts/AuthContext';
 import type { AppRole } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
+import { PendingApprovalScreen } from '@/components/PendingApprovalScreen';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, role, loading, initialized } = useAuthContext();
+  const { isAuthenticated, role, profile, loading, initialized } = useAuthContext();
   const location = useLocation();
 
   if (!initialized || loading) {
@@ -22,6 +23,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (profile && profile.approval_status !== 'approved') {
+    return <PendingApprovalScreen status={profile.approval_status} />;
   }
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {

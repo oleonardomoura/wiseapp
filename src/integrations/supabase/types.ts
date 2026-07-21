@@ -10,7 +10,32 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.4"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -85,6 +110,38 @@ export type Database = {
           },
         ]
       }
+      audio_text_phrases: {
+        Row: {
+          explanation: string | null
+          id: string
+          phrase: string
+          text_id: string
+          translation: string
+        }
+        Insert: {
+          explanation?: string | null
+          id?: string
+          phrase: string
+          text_id: string
+          translation: string
+        }
+        Update: {
+          explanation?: string | null
+          id?: string
+          phrase?: string
+          text_id?: string
+          translation?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audio_text_phrases_text_id_fkey"
+            columns: ["text_id"]
+            isOneToOne: false
+            referencedRelation: "audio_texts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audio_text_sentences: {
         Row: {
           en: string
@@ -110,6 +167,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "audio_text_sentences_text_id_fkey"
+            columns: ["text_id"]
+            isOneToOne: false
+            referencedRelation: "audio_texts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audio_text_tips: {
+        Row: {
+          content: string
+          id: string
+          seq: number | null
+          text_id: string
+          title: string
+        }
+        Insert: {
+          content: string
+          id?: string
+          seq?: number | null
+          text_id: string
+          title: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          seq?: number | null
+          text_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audio_text_tips_text_id_fkey"
             columns: ["text_id"]
             isOneToOne: false
             referencedRelation: "audio_texts"
@@ -151,8 +240,10 @@ export type Database = {
       }
       audio_texts: {
         Row: {
+          class_id: string | null
           created_at: string
           duration: string
+          full_text_pt: string | null
           id: string
           level: string
           seq: number
@@ -161,8 +252,10 @@ export type Database = {
           title_pt: string
         }
         Insert: {
+          class_id?: string | null
           created_at?: string
           duration?: string
+          full_text_pt?: string | null
           id?: string
           level?: string
           seq?: number
@@ -171,8 +264,10 @@ export type Database = {
           title_pt: string
         }
         Update: {
+          class_id?: string | null
           created_at?: string
           duration?: string
+          full_text_pt?: string | null
           id?: string
           level?: string
           seq?: number
@@ -180,7 +275,126 @@ export type Database = {
           title?: string
           title_pt?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "audio_texts_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_enrollments: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_materials: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          description: string | null
+          file_size: number | null
+          file_url: string
+          id: string
+          title: string
+          type: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          file_size?: number | null
+          file_url: string
+          id?: string
+          title: string
+          type: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_materials_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_notifications: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          message: string
+          teacher_id: string
+          title: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          message: string
+          teacher_id: string
+          title: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          teacher_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_notifications_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
@@ -213,6 +427,110 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      consolidation_items: {
+        Row: {
+          acceptable: string[]
+          answer: string
+          class_id: string | null
+          created_at: string
+          id: string
+          lesson_id: number
+          order: number
+          prompt: string
+        }
+        Insert: {
+          acceptable?: string[]
+          answer: string
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          lesson_id: number
+          order?: number
+          prompt: string
+        }
+        Update: {
+          acceptable?: string[]
+          answer?: string
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: number
+          order?: number
+          prompt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consolidation_items_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consolidation_items_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_class_targets: {
+        Row: {
+          class_id: string
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          class_id: string
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          class_id?: string
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_class_targets_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_level_targets: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          level: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          level: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          level?: string
+        }
+        Relationships: []
       }
       conversation_groups: {
         Row: {
@@ -273,34 +591,76 @@ export type Database = {
           },
         ]
       }
-      class_notifications: {
+      course_lessons: {
         Row: {
-          class_id: string
+          class_id: string | null
           created_at: string
-          id: string
-          message: string
-          teacher_id: string
+          id: number
+          module_id: number
+          order: number
           title: string
         }
         Insert: {
-          class_id: string
+          class_id?: string | null
           created_at?: string
-          id?: string
-          message: string
-          teacher_id: string
+          id?: number
+          module_id: number
+          order?: number
           title: string
         }
         Update: {
-          class_id?: string
+          class_id?: string | null
           created_at?: string
-          id?: string
-          message?: string
-          teacher_id?: string
+          id?: number
+          module_id?: number
+          order?: number
           title?: string
         }
         Relationships: [
           {
-            foreignKeyName: "class_notifications_class_id_fkey"
+            foreignKeyName: "course_lessons_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "course_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_modules: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          id: number
+          level: string
+          order: number
+          title: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          id?: number
+          level?: string
+          order?: number
+          title: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          id?: number
+          level?: string
+          order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_modules_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "teacher_classes"
@@ -349,24 +709,35 @@ export type Database = {
       }
       flashcard_collections: {
         Row: {
+          class_id: string | null
           created_at: string
           id: string
           level: string
           name: string
         }
         Insert: {
+          class_id?: string | null
           created_at?: string
           id?: string
           level?: string
           name: string
         }
         Update: {
+          class_id?: string | null
           created_at?: string
           id?: string
           level?: string
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "flashcard_collections_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       flashcard_progress: {
         Row: {
@@ -662,6 +1033,51 @@ export type Database = {
         }
         Relationships: []
       }
+      oral_practice_items: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          id: string
+          lesson_id: number
+          order: number
+          phrase: string
+          translation: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          lesson_id: number
+          order?: number
+          phrase: string
+          translation: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: number
+          order?: number
+          phrase?: string
+          translation?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oral_practice_items_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oral_practice_items_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_likes: {
         Row: {
           created_at: string
@@ -720,39 +1136,42 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: string
           avatar_url: string | null
           cefr_level: string | null
           created_at: string
           full_name: string | null
-          username: string | null
           id: string
           last_active_at: string | null
           streak: number | null
           updated_at: string
+          username: string | null
           xp: number | null
         }
         Insert: {
+          approval_status?: string
           avatar_url?: string | null
           cefr_level?: string | null
           created_at?: string
           full_name?: string | null
-          username?: string | null
           id: string
           last_active_at?: string | null
           streak?: number | null
           updated_at?: string
+          username?: string | null
           xp?: number | null
         }
         Update: {
+          approval_status?: string
           avatar_url?: string | null
           cefr_level?: string | null
           created_at?: string
           full_name?: string | null
-          username?: string | null
           id?: string
           last_active_at?: string | null
           streak?: number | null
           updated_at?: string
+          username?: string | null
           xp?: number | null
         }
         Relationships: []
@@ -864,35 +1283,6 @@ export type Database = {
         }
         Relationships: []
       }
-      class_enrollments: {
-        Row: {
-          class_id: string
-          created_at: string
-          id: string
-          student_id: string
-        }
-        Insert: {
-          class_id: string
-          created_at?: string
-          id?: string
-          student_id: string
-        }
-        Update: {
-          class_id?: string
-          created_at?: string
-          id?: string
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "class_enrollments_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "teacher_classes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_achievements: {
         Row: {
           achievement_key: string
@@ -943,9 +1333,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      assign_demo_role: {
-        Args: { _email: string; _user_id: string }
-        Returns: undefined
+      admin_list_users: {
+        Args: never
+        Returns: {
+          approval_status: string
+          avatar_url: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          username: string
+        }[]
+      }
+      content_has_any_target: {
+        Args: { _content_id: string; _content_type: string }
+        Returns: boolean
+      }
+      content_is_visible: {
+        Args: {
+          _content_id: string
+          _content_type: string
+          _owner_class_id: string
+        }
+        Returns: boolean
       }
       get_user_role: {
         Args: { _user_id: string }
@@ -957,6 +1368,12 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      visible_content_ids: {
+        Args: { _class_id: string; _content_type: string }
+        Returns: {
+          content_id: string
+        }[]
       }
     }
     Enums: {
@@ -1086,6 +1503,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "teacher", "student"],

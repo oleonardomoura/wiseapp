@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { GraduationCap, ChevronRight, Plus, Loader2, Trash2, Pencil } from 'lucide-react';
+import { GraduationCap, ChevronRight, Plus, Loader2, Trash2, Pencil, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -39,6 +39,8 @@ export default function ClassesPage() {
   const [name, setName] = useState('');
   const [level, setLevel] = useState('A1');
   const [description, setDescription] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [levelFilter, setLevelFilter] = useState('all');
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -80,6 +82,18 @@ export default function ClassesPage() {
     enrollments.forEach(e => map.set(e.class_id, (map.get(e.class_id) ?? 0) + 1));
     return map;
   }, [enrollments]);
+
+  const filteredClasses = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return classes.filter(cls => {
+      const matchesQuery = !query || cls.name.toLowerCase().includes(query);
+      const matchesLevel = levelFilter === 'all' || cls.level === levelFilter;
+      return matchesQuery && matchesLevel;
+    });
+  }, [classes, searchQuery, levelFilter]);
+
+  const hasActiveFilters = searchQuery.trim() !== '' || levelFilter !== 'all';
+  const clearFilters = () => { setSearchQuery(''); setLevelFilter('all'); };
 
   const resetForm = () => {
     setEditingId(null);
@@ -172,6 +186,34 @@ export default function ClassesPage() {
         </Button>
       </div>
 
+      {!loading && classes.length > 0 && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1 sm:max-w-xs">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Buscar turma pelo nome..."
+              className="pl-9"
+            />
+          </div>
+          <Select value={levelFilter} onValueChange={setLevelFilter}>
+            <SelectTrigger className="sm:w-48">
+              <SelectValue placeholder="Nível" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os níveis</SelectItem>
+              {LEVEL_OPTIONS.map(lvl => <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={clearFilters}>
+              <X className="h-3.5 w-3.5" /> Limpar
+            </Button>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="rounded-xl border border-border bg-card p-10 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -181,9 +223,14 @@ export default function ClassesPage() {
           <h3 className="font-semibold text-foreground">Nenhuma turma criada</h3>
           <p className="mt-1 text-sm text-muted-foreground">Crie sua primeira turma para começar a gestão.</p>
         </div>
+      ) : filteredClasses.length === 0 ? (
+        <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <h3 className="font-semibold text-foreground">Nenhuma turma encontrada</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Ajuste a busca ou o filtro de nível.</p>
+        </div>
       ) : (
         <div className="space-y-3">
-          {classes.map((cls) => (
+          {filteredClasses.map((cls) => (
             <div
               key={cls.id}
               className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"

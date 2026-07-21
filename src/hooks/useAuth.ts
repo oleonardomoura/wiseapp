@@ -4,6 +4,8 @@ import type { User, Session } from '@supabase/supabase-js';
 
 export type AppRole = 'admin' | 'teacher' | 'student';
 
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
 export interface Profile {
   id: string;
   full_name: string | null;
@@ -13,6 +15,7 @@ export interface Profile {
   xp: number;
   streak: number;
   last_active_at: string | null;
+  approval_status: ApprovalStatus;
 }
 
 interface AuthState {
